@@ -1,0 +1,446 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+    color: white;
+}
+
+header h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+main {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.controls label {
+    font-weight: 600;
+    color: #555;
+}
+
+#cipher-select {
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+#cipher-select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+#get-quote-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#get-quote-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+#get-quote-btn:active {
+    transform: translateY(0);
+}
+
+.quote-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.quote-box, .cipher-box {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 25px;
+    border-left: 4px solid #667eea;
+}
+
+.cipher-box {
+    border-left-color: #764ba2;
+}
+
+.cipher-box.full-width {
+    width: 100%;
+}
+
+.quote-box h3, .cipher-box h3 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.quote-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #444;
+    margin-bottom: 15px;
+    min-height: 60px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.quote-author {
+    font-style: italic;
+    color: #666;
+    text-align: right;
+    font-size: 0.95rem;
+}
+
+.cipher-info {
+    background: #e3f2fd;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #1565c0;
+    border-left: 3px solid #2196f3;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.attribution {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.attribution p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+}
+
+.attribution a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.attribution a:hover {
+    text-decoration: underline;
+}
+
+.reveal-section {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.reveal-btn {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reveal-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.reveal-btn:active {
+    transform: translateY(0);
+}
+
+.reveal-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.revealed-content {
+    margin-top: 20px;
+    padding: 20px;
+    background: #e8f5e8;
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+}
+
+.revealed-quote {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #155724;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.revealed-keywords {
+    font-size: 0.95rem;
+    color: #0f5132;
+    font-weight: 600;
+    background: #d1f2d1;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+.revealed-alphabet {
+    margin-top: 10px;
+}
+
+.alphabet-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+.alphabet-table th,
+.alphabet-table td {
+    border: 1px solid #28a745;
+    padding: 8px 4px;
+    text-align: center;
+    min-width: 25px;
+}
+
+.alphabet-table th {
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+}
+
+.alphabet-table td {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.keyword-highlight {
+    background-color: #fff3cd !important;
+    color: #856404;
+    font-weight: bold;
+}
+
+.alphabet-label {
+    font-weight: bold;
+    color: #155724;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+/* API Key Section */
+.api-key-section {
+    border-top: 1px solid #ddd;
+    padding-top: 1rem;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.api-key-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+    color: #555;
+}
+
+.api-key-toggle-label input[type="checkbox"] {
+    margin: 0;
+}
+
+.api-key-container {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.api-key-container label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+    color: #555;
+}
+
+.api-key-container input[type="password"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.api-key-container input[type="password"]:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.api-key-status {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0;
+    font-weight: 500;
+}
+
+.api-key-status.success {
+    color: #28a745;
+}
+
+.api-key-status.warning {
+    color: #ffc107;
+}
+
+.api-key-status.error {
+    color: #dc3545;
+}
+
+.api-key-help {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.api-key-help a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.api-key-help a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    header h1 {
+        font-size: 2.5rem;
+    }
+    
+    .quote-section {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .controls label {
+        margin-bottom: 5px;
+    }
+    
+    #cipher-select {
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    main {
+        padding: 20px;
+    }
+    
+    .quote-box, .cipher-box {
+        padding: 20px;
+    }
+    
+    .reveal-section {
+        flex-direction: column;
+    }
+    
+    .reveal-btn {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .alphabet-table {
+        font-size: 0.7rem;
+    }
+    
+    .alphabet-table th,
+    .alphabet-table td {
+        padding: 4px 2px;
+        min-width: 20px;
+    }
+}

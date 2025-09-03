@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quote Cipher - Codebusters</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Quote Cipher</h1>
+            <p>Get random quotes and encode them with monoalphabetic ciphers</p>
+        </header>
+
+        <main>
+            <div class="controls">
+                <label for="cipher-select">Choose Cipher:</label>
+                <select id="cipher-select">
+                    <option value="k1">K1 - Mixed Plaintext</option>
+                    <option value="k2">K2 - Mixed Ciphertext</option>
+                    <option value="k3">K3 - Mixed Both Same Key</option>
+                    <option value="k4">K4 - Mixed Both Different Keys</option>
+                    <option value="random">Random Alphabet</option>
+                </select>
+                
+                <div class="api-key-section">
+                    <label class="api-key-toggle-label">
+                        <input type="checkbox" id="api-key-toggle">
+                        Use API Key (unlimited requests)
+                    </label>
+                    
+                    <div id="api-key-container" class="api-key-container" style="display: none;">
+                        <label for="api-key-input">ZenQuotes API Key:</label>
+                        <input type="password" id="api-key-input" placeholder="Enter your ZenQuotes API key">
+                        <div id="api-key-status" class="api-key-status"></div>
+                        <div class="api-key-help">
+                            Get your free API key at <a href="https://zenquotes.io/" target="_blank">zenquotes.io</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="get-quote-btn">Get Random Quote</button>
+            </div>
+
+            <div class="quote-section">
+                <div class="cipher-box full-width">
+                    <h3>Encoded Quote:</h3>
+                    <div id="encoded-quote" class="quote-text">Select a cipher and get a quote to see the encoded text</div>
+                    <div class="cipher-info">
+                        <span id="cipher-info">Select a cipher and get a quote</span>
+                    </div>
+                    <div class="reveal-section">
+                        <button id="reveal-quote-btn" class="reveal-btn" style="display: none;">Reveal Original Quote</button>
+                        <button id="reveal-keyword-btn" class="reveal-btn" style="display: none;">Reveal Keyword(s)</button>
+                        <button id="reveal-alphabet-btn" class="reveal-btn" style="display: none;">Reveal Alphabet Table</button>
+                    </div>
+                    
+                    <div id="revealed-quote-content" class="revealed-content" style="display: none;">
+                        <div id="revealed-quote" class="revealed-quote"></div>
+                    </div>
+                    
+                    <div id="revealed-keyword-content" class="revealed-content" style="display: none;">
+                        <div id="revealed-keywords" class="revealed-keywords"></div>
+                    </div>
+                    
+                    <div id="revealed-alphabet-content" class="revealed-content" style="display: none;">
+                        <div id="revealed-alphabet" class="revealed-alphabet"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Fetching quote...</p>
+            </div>
+            
+            <div class="attribution">
+                <p>Inspirational quotes provided by <a href="https://zenquotes.io/" target="_blank">ZenQuotes API</a></p>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
