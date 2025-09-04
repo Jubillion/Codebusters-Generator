@@ -44,6 +44,9 @@ export class QuoteCipher {
     }
 
     onCipherChange() {
+        // Update button visibility based on cipher type
+        this.uiManager.resetRevealButtons();
+        
         // Re-encode current quote if exists
         if (this.uiManager.currentQuote) {
             this.encodeCurrentQuote();

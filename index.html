@@ -9,8 +9,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>Quote Cipher</h1>
-            <p>Get random quotes and encode them with monoalphabetic ciphers</p>
+            <h1>Codebusters Generator</h1>
+            <p>Get random quotes and encode them with SciOly Codebusters ciphers</p>
         </header>
 
         <main>
@@ -35,7 +35,7 @@
                         <input type="password" id="api-key-input" placeholder="Enter your ZenQuotes API key">
                         <div id="api-key-status" class="api-key-status"></div>
                         <div class="api-key-help">
-                            Get your free API key at <a href="https://zenquotes.io/" target="_blank">zenquotes.io</a>
+                            Get your API key at <a href="https://zenquotes.io/" target="_blank">zenquotes.io</a>
                         </div>
                     </div>
                 </div>
@@ -54,6 +54,7 @@
                         <button id="reveal-quote-btn" class="reveal-btn" style="display: none;">Reveal Original Quote</button>
                         <button id="reveal-keyword-btn" class="reveal-btn" style="display: none;">Reveal Keyword(s)</button>
                         <button id="reveal-alphabet-btn" class="reveal-btn" style="display: none;">Reveal Alphabet Table</button>
+                        <button id="print-cipher-btn" class="reveal-btn" style="display: none;">Print Cipher Worksheet</button>
                     </div>
                     
                     <div id="revealed-quote-content" class="revealed-content" style="display: none;">
@@ -79,6 +80,21 @@
                 <p>Inspirational quotes provided by <a href="https://zenquotes.io/" target="_blank">ZenQuotes API</a></p>
             </div>
         </main>
+
+        <!-- Print-only content -->
+        <div id="print-content" class="print-only" style="display: none;">
+            <div class="print-header">
+                <h1 id="print-title">Cipher Worksheet</h1>
+                <div id="print-cipher-info" class="cipher-info"></div>
+                <div id="print-author" class="author"></div>
+            </div>
+            
+            <div class="section-header">Decode the Message:</div>
+            <div id="print-cipher-text-table"></div>
+            
+            <div class="section-header">Letter Substitution Chart:</div>
+            <div id="print-substitution-table"></div>
+        </div>
     </div>
 
     <script type="module" src="js/app.js"></script>

@@ -98,3 +98,81 @@ Works in all modern browsers that support:
 - **Random Keywords**: Each cipher uses randomly selected keywords from a pool of 100+ words
 - Keywords and author information provided as solving hints
 - Press `Ctrl+T` for a test quote when API is unavailable
+
+## File Structure
+
+```
+/
+├── index.html            # Main HTML file
+├── style.css             # Styling
+└── js/                   # New modular JavaScript files
+    ├── app.js            # Main application coordinator
+    ├── config.js         # Configuration and constants
+    ├── api-manager.js    # API and quote fetching
+    ├── cipher-engine.js  # All cipher implementations
+    ├── ui-manager.js     # User interface management
+    └── validator.js      # Keyword validation system
+```
+
+## Module Responsibilities
+
+### 1. `config.js` - Configuration and Constants
+
+- **Purpose**: Centralized configuration and data constants
+- **Contents**:
+  - Standard alphabet constant
+  - Keyword list (100+ words)
+  - Fallback quotes
+  - KeywordGenerator class for managing cipher keywords
+  - Random alphabet generation
+
+### 2. `api-manager.js` - API Management
+
+- **Purpose**: Handles all quote fetching and API key management
+- **Contents**:
+  - API key validation and storage
+  - ZenQuotes API integration
+  - CORS proxy fallback handling
+  - Fallback quote system
+  - Attribution management
+
+### 3. `cipher-engine.js` - Cipher Implementations
+
+- **Purpose**: All cryptographic operations and alphabet generation
+- **Contents**:
+  - K1, K2, K3, K4 cipher implementations
+  - Random alphabet cipher
+  - Smart alphabet rearrangement (Caesar-style shifting)
+  - Identity mapping prevention
+  - Keyword positioning algorithms
+
+### 4. `ui-manager.js` - User Interface Management
+
+- **Purpose**: All UI interactions and display logic
+- **Contents**:
+  - DOM element management
+  - Event binding
+  - Quote and cipher result display
+  - Reveal functionality (quote, keywords, alphabet tables)
+  - Error message display
+  - Table generation for alphabet visualization
+
+### 5. `validator.js` - Validation System
+
+- **Purpose**: Keyword positioning validation and verification
+- **Contents**:
+  - Keyword order validation
+  - Contiguity checking
+  - Silent validation system
+  - Auto-fix coordination
+  - Detailed validation reporting
+
+### 6. `app.js` - Main Application Coordinator
+
+- **Purpose**: Orchestrates all modules and manages application flow
+- **Contents**:
+  - Module initialization
+  - Event coordination
+  - Quote encoding workflow
+  - Cipher type switching
+  - Testing functionality
