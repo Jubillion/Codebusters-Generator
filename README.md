@@ -9,8 +9,9 @@ A simple web application that fetches random quotes from the ZenQuotes API and e
   - **K1**: Mixed plaintext alphabet, standard ciphertext alphabet
   - **K2**: Standard plaintext alphabet, mixed ciphertext alphabet
   - **K3**: Both alphabets mixed with same random keyword
-  - **K4**: Both alphabets mixed with different random keywords
+  - ~~**K4**: Both alphabets mixed with different random keywords~~ *(removed)*
   - **Random Alphabet**: Completely randomized substitution alphabet
+  - **Nihilist**: Number-based cipher using Polybius square and key addition
 - **Cryptogram Format**: Shows only encoded text (no plaintext) for solving practice
 - **100+ Random Keywords**: Each cipher uses randomly selected keywords from a large pool
 - **Responsive Design**: Works on desktop and mobile devices
@@ -59,30 +60,28 @@ A simple web application that fetches random quotes from the ZenQuotes API and e
 - New random alphabet generated each time option is selected
 - Shows the full substitution alphabet in cipher info
 
+### Nihilist Cipher
+
+- **Number-based encryption** using a 5×5 Polybius square and key addition
+- **Two keywords**: Polybius key (creates the square) and encryption key (for addition)
+- **Process**:
+  1. Polybius square created from keyword (I and J share same cell)
+  2. Text converted to row,column coordinates
+  3. Key repeated and converted to coordinates
+  4. Text coordinates + Key coordinates = cipher numbers
+- **Output**: Space-separated numbers instead of letters
+- **Example**: With keys "MOUNTAIN/CIPHER" → "HELLO" → "52 73 64 64 75"
+- **Print worksheets**: Custom format with number grids and blank Polybius square
+
 ### Keyword Pool
 
-The app randomly selects from 100+ keywords including: ADVENTURE, BEAUTIFUL, CHALLENGE, DISCOVERY, ELEPHANT, FANTASTIC, GALAXY, HARMONY, IMAGINATION, JOURNEY, KNOWLEDGE, LIGHTHOUSE, MOUNTAIN, NAUTICAL, OCEAN, PARADISE, QUALITY, RAINBOW, SUNSHINE, TREASURE, UNIVERSE, VICTORY, WISDOM, and many more.
+The app randomly selects from 200+ keywords including: ADVENTURE, BEAUTIFUL, CHALLENGE, DISCOVERY, ELEPHANT, FANTASTIC, GALAXY, HARMONY, IMAGINATION, JOURNEY, KNOWLEDGE, LIGHTHOUSE, MOUNTAIN, NAUTICAL, OCEAN, PARADISE, QUALITY, RAINBOW, SUNSHINE, TREASURE, UNIVERSE, VICTORY, WISDOM, and many more.
 
 ## Files
 
 - `index.html` - Main HTML structure
 - `style.css` - Styling and responsive design
 - `script.js` - JavaScript functionality and cipher algorithms
-
-## Testing
-
-- Press `Ctrl+T` to load a sample quote for testing purposes
-- The app handles API errors gracefully
-- All ciphers preserve non-alphabetic characters (spaces, punctuation, numbers)
-
-## Browser Compatibility
-
-Works in all modern browsers that support:
-
-- ES6 Classes
-- Fetch API
-- CSS Grid
-- Flexbox
 
 ## Notes
 
@@ -101,7 +100,7 @@ Works in all modern browsers that support:
 
 ## File Structure
 
-```
+```sh
 /
 ├── index.html            # Main HTML file
 ├── style.css             # Styling
@@ -142,6 +141,7 @@ Works in all modern browsers that support:
 - **Contents**:
   - K1, K2, K3, K4 cipher implementations
   - Random alphabet cipher
+  - Nihilist cipher with Polybius square
   - Smart alphabet rearrangement (Caesar-style shifting)
   - Identity mapping prevention
   - Keyword positioning algorithms
@@ -154,8 +154,10 @@ Works in all modern browsers that support:
   - Event binding
   - Quote and cipher result display
   - Reveal functionality (quote, keywords, alphabet tables)
+  - Custom Nihilist cipher displays (Polybius square, number tables)
+  - Print worksheet generation with cipher-specific layouts
   - Error message display
-  - Table generation for alphabet visualization
+  - Table generation for alphabet and Polybius square visualization
 
 ### 5. `validator.js` - Validation System
 

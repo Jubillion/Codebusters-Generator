@@ -6,15 +6,16 @@ export class CipherEngine {
         this.lastKeywordPositions = null;
     }
 
-    // Helper function to create keyed alphabet with keyword positioned for readability
+    // Helper function to create ACA-compliant keyed alphabet
     createKeyedAlphabet(keyword, positionInMiddle = false) {
         // Remove duplicates from keyword and convert to uppercase
         const cleanKeyword = [...new Set(keyword.toUpperCase().replace(/[^A-Z]/g, ''))].join('');
         
+        // Step 1: Add the key to the alphabet
         // Get remaining letters not in keyword
         const remainingLetters = CONFIG.STANDARD_ALPHABET.split('').filter(letter => !cleanKeyword.includes(letter));
         
-        let finalAlphabet;
+        let baseAlphabet;
         let keywordStartPosition;
         
         if (positionInMiddle && cleanKeyword.length <= 20) {
@@ -23,11 +24,11 @@ export class CipherEngine {
             const beforeKeyword = remainingLetters.slice(0, targetStart);
             const afterKeyword = remainingLetters.slice(targetStart);
             
-            finalAlphabet = beforeKeyword.join('') + cleanKeyword + afterKeyword.join('');
+            baseAlphabet = beforeKeyword.join('') + cleanKeyword + afterKeyword.join('');
             keywordStartPosition = beforeKeyword.length;
         } else {
             // Default: keyword at the beginning
-            finalAlphabet = cleanKeyword + remainingLetters.join('');
+            baseAlphabet = cleanKeyword + remainingLetters.join('');
             keywordStartPosition = 0;
         }
         
@@ -38,8 +39,122 @@ export class CipherEngine {
             endPosition: keywordStartPosition + cleanKeyword.length - 1
         };
         
-        // Apply smart rearrangement to prevent identity mappings while preserving keyword
-        return this.smartRearrangeAlphabet(finalAlphabet, keywordStartPosition, cleanKeyword.length);
+        // Step 3: Apply random shift (1-25) and check for identity mappings
+        return this.applyACAShift(baseAlphabet);
+    }
+
+    // Apply ACA-compliant shift with identity mapping check
+    applyACAShift(alphabet) {
+        let shiftAmount = Math.floor(Math.random() * 25) + 1; // Random shift 1-25
+        let attempts = 0;
+        const maxAttempts = 25;
+        const originalKeywordPositions = { ...this.lastKeywordPositions };
+        
+        while (attempts < maxAttempts) {
+            // Apply circular shift to the entire alphabet
+            const shiftedAlphabet = this.circularShift(alphabet, shiftAmount);
+            
+            // Check for identity mappings against standard alphabet
+            let hasIdentityMapping = false;
+            for (let i = 0; i < 26; i++) {
+                if (shiftedAlphabet[i] === CONFIG.STANDARD_ALPHABET[i]) {
+                    hasIdentityMapping = true;
+                    break;
+                }
+            }
+            
+            // If no identity mappings, update keyword positions and return
+            if (!hasIdentityMapping) {
+                this.updateKeywordPositionsAfterShift(originalKeywordPositions, shiftAmount);
+                return shiftedAlphabet;
+            }
+            
+            // Try next shift amount
+            attempts++;
+            shiftAmount = (shiftAmount % 25) + 1; // Cycle through 1-25
+        }
+        
+        // If all shifts have identity mappings, return the last attempt
+        // This is extremely rare but provides fallback
+        this.updateKeywordPositionsAfterShift(originalKeywordPositions, shiftAmount);
+        return this.circularShift(alphabet, shiftAmount);
+    }
+    
+    // Apply ACA-compliant shift with additional check against another alphabet (for K3)
+    applyACAShiftWithComparison(alphabet, comparisonAlphabet) {
+        let shiftAmount = Math.floor(Math.random() * 25) + 1; // Random shift 1-25
+        let attempts = 0;
+        const maxAttempts = 25;
+        const originalKeywordPositions = { ...this.lastKeywordPositions };
+        
+        while (attempts < maxAttempts) {
+            // Apply circular shift to the entire alphabet
+            const shiftedAlphabet = this.circularShift(alphabet, shiftAmount);
+            
+            // Check for identity mappings against standard alphabet
+            let hasStandardIdentity = false;
+            for (let i = 0; i < 26; i++) {
+                if (shiftedAlphabet[i] === CONFIG.STANDARD_ALPHABET[i]) {
+                    hasStandardIdentity = true;
+                    break;
+                }
+            }
+            
+            // Check if shifted alphabet is identical to comparison alphabet
+            let isIdenticalToComparison = (shiftedAlphabet === comparisonAlphabet);
+            
+            // If no identity mappings and not identical to comparison, return
+            if (!hasStandardIdentity && !isIdenticalToComparison) {
+                this.updateKeywordPositionsAfterShift(originalKeywordPositions, shiftAmount);
+                return shiftedAlphabet;
+            }
+            
+            // Try next shift amount
+            attempts++;
+            shiftAmount = (shiftAmount % 25) + 1; // Cycle through 1-25
+        }
+        
+        // Fallback: return shift that at least avoids standard identity mappings
+        for (let fallbackShift = 1; fallbackShift <= 25; fallbackShift++) {
+            const fallbackAlphabet = this.circularShift(alphabet, fallbackShift);
+            let hasStandardIdentity = false;
+            for (let i = 0; i < 26; i++) {
+                if (fallbackAlphabet[i] === CONFIG.STANDARD_ALPHABET[i]) {
+                    hasStandardIdentity = true;
+                    break;
+                }
+            }
+            if (!hasStandardIdentity) {
+                this.updateKeywordPositionsAfterShift(originalKeywordPositions, fallbackShift);
+                return fallbackAlphabet;
+            }
+        }
+        
+        // Ultimate fallback
+        this.updateKeywordPositionsAfterShift(originalKeywordPositions, shiftAmount);
+        return this.circularShift(alphabet, shiftAmount);
+    }
+    
+    // Helper method to update keyword positions after circular shift
+    updateKeywordPositionsAfterShift(originalPositions, shiftAmount) {
+        const shift = shiftAmount % 26;
+        const newStartPosition = (originalPositions.startPosition - shift + 26) % 26;
+        
+        this.lastKeywordPositions = {
+            keyword: originalPositions.keyword,
+            startPosition: newStartPosition,
+            endPosition: (newStartPosition + originalPositions.keyword.length - 1) % 26
+        };
+    }
+    
+    // Helper method to perform circular shift on alphabet string
+    circularShift(alphabet, shiftAmount) {
+        const arr = alphabet.split('');
+        const n = arr.length;
+        const shift = shiftAmount % n;
+        
+        // Perform right circular shift
+        return (arr.slice(-shift).concat(arr.slice(0, -shift))).join('');
     }
 
     // Smart rearrangement that preserves keyword integrity with Caesar-style shifting
@@ -167,6 +282,7 @@ export class CipherEngine {
         return finalAlphabet;
     }
 
+    // K4 LEGACY CODE - Included for reference only - DO NOT MODIFY
     // Smart K4-specific rearrangement that preserves both keywords with Caesar-style shifting
     smartK4Rearrangement(plaintextAlphabet, ciphertextAlphabet, plaintextPositions, ciphertextPositions) {
         let plainResult = plaintextAlphabet.split('');
@@ -313,49 +429,61 @@ export class CipherEngine {
         };
     }
 
-    // K1 - Mixed plaintext alphabet, standard ciphertext
+    // K1 - Mixed plaintext alphabet, standard ciphertext (ACA compliant)
     k1Cipher(text, keyword) {
+        // Create keyed plaintext alphabet using ACA method
         const keyedPlaintext = this.createKeyedAlphabet(keyword);
         const plaintextPositions = { ...this.lastKeywordPositions };
         const plaintextAlphabet = keyedPlaintext;
-        const standardCipher = CONFIG.STANDARD_ALPHABET;
+        const ciphertextAlphabet = CONFIG.STANDARD_ALPHABET;
         
         return {
-            encodedText: this.substituteText(text, keyedPlaintext, standardCipher),
+            encodedText: this.substituteText(text, keyedPlaintext, ciphertextAlphabet),
             plaintextAlphabet,
-            ciphertextAlphabet: standardCipher,
+            ciphertextAlphabet,
             plaintextPositions
         };
     }
 
-    // K2 - Standard plaintext, mixed ciphertext alphabet
+    // K2 - Standard plaintext, mixed ciphertext alphabet (ACA compliant)
     k2Cipher(text, keyword) {
-        const standardPlaintext = CONFIG.STANDARD_ALPHABET;
-        const keyedCipher = this.createKeyedAlphabet(keyword);
+        const plaintextAlphabet = CONFIG.STANDARD_ALPHABET;
+        
+        // Create keyed ciphertext alphabet using ACA method
+        const keyedCiphertext = this.createKeyedAlphabet(keyword);
         const ciphertextPositions = { ...this.lastKeywordPositions };
-        const ciphertextAlphabet = keyedCipher;
+        const ciphertextAlphabet = keyedCiphertext;
         
         return {
-            encodedText: this.substituteText(text, standardPlaintext, keyedCipher),
-            plaintextAlphabet: standardPlaintext,
+            encodedText: this.substituteText(text, plaintextAlphabet, keyedCiphertext),
+            plaintextAlphabet,
             ciphertextAlphabet,
             ciphertextPositions
         };
     }
 
-    // K3 - Both alphabets mixed with same keyword but positioned differently
+    // K3 - Both alphabets mixed with same keyword (ACA compliant)
     k3Cipher(text, keyword) {
-        const keyedPlaintext = this.createKeyedAlphabet(keyword);
-        const plaintextPositions = { ...this.lastKeywordPositions };
-        const plaintextAlphabet = keyedPlaintext;
+        // Create base keyed alphabet without shifting
+        const cleanKeyword = [...new Set(keyword.toUpperCase().replace(/[^A-Z]/g, ''))].join('');
+        const remainingLetters = CONFIG.STANDARD_ALPHABET.split('').filter(letter => !cleanKeyword.includes(letter));
+        const baseKeyedAlphabet = cleanKeyword + remainingLetters.join('');
         
-        // Create a different arrangement for ciphertext using the same keyword but positioned in middle
-        const keyedCipher = this.createKeyedAlphabet(keyword, true);
+        // Plaintext alphabet - use base keyed alphabet without shifting
+        this.lastKeywordPositions = {
+            keyword: cleanKeyword,
+            startPosition: 0,
+            endPosition: cleanKeyword.length - 1
+        };
+        const plaintextAlphabet = baseKeyedAlphabet;
+        const plaintextPositions = { ...this.lastKeywordPositions };
+        
+        // Ciphertext alphabet - apply ACA shift ensuring it's different from plaintext
+        const ciphertextAlphabet = this.applyACAShiftWithComparison(baseKeyedAlphabet, plaintextAlphabet);
         const ciphertextPositions = { ...this.lastKeywordPositions };
-        const ciphertextAlphabet = keyedCipher;
         
         return {
-            encodedText: this.substituteText(text, keyedPlaintext, keyedCipher),
+            encodedText: this.substituteText(text, plaintextAlphabet, ciphertextAlphabet),
             plaintextAlphabet,
             ciphertextAlphabet,
             plaintextPositions,
@@ -363,28 +491,21 @@ export class CipherEngine {
         };
     }
 
-    // K4 - Both alphabets mixed with different keywords
+    // K4 LEGACY CODE - Included for reference only - DO NOT MODIFY
+    // K4 - Both alphabets mixed with different keywords (ACA compliant)
     k4Cipher(text, plaintextKeyword, ciphertextKeyword) {
-        // Create both alphabets first without identity checking
-        const keyedPlaintext = this.createKeyedAlphabetRaw(plaintextKeyword);
+        // Create plaintext alphabet with first keyword using ACA method
+        const plaintextAlphabet = this.createKeyedAlphabet(plaintextKeyword);
         const plaintextPositions = { ...this.lastKeywordPositions };
         
-        // Position the second keyword in the middle for better visibility
-        const keyedCipher = this.createKeyedAlphabetRaw(ciphertextKeyword, true);
+        // Create ciphertext alphabet with second keyword using ACA method
+        const ciphertextAlphabet = this.createKeyedAlphabet(ciphertextKeyword, true);
         const ciphertextPositions = { ...this.lastKeywordPositions };
         
-        // Now apply smart K4 rearrangement that considers both keywords
-        const { finalPlaintext, finalCiphertext } = this.smartK4Rearrangement(
-            keyedPlaintext, 
-            keyedCipher, 
-            plaintextPositions, 
-            ciphertextPositions
-        );
-        
         return {
-            encodedText: this.substituteText(text, finalPlaintext, finalCiphertext),
-            plaintextAlphabet: finalPlaintext,
-            ciphertextAlphabet: finalCiphertext,
+            encodedText: this.substituteText(text, plaintextAlphabet, ciphertextAlphabet),
+            plaintextAlphabet,
+            ciphertextAlphabet,
             plaintextPositions,
             ciphertextPositions
         };
@@ -397,6 +518,185 @@ export class CipherEngine {
             plaintextAlphabet: CONFIG.STANDARD_ALPHABET,
             ciphertextAlphabet: randomAlphabet
         };
+    }
+
+    // Nihilist cipher implementation
+    nihilistCipher(text, polybiusKey, key) {
+        // Create the Polybius square with deranged alphabet (I/J combined)
+        const polybiusSquare = this.createPolybiusSquare(polybiusKey);
+        
+        // Convert text to coordinates
+        const coordinates = this.textToCoordinates(text, polybiusSquare);
+        
+        // Convert key to coordinates and repeat as needed
+        const keyCoordinates = this.keyToCoordinates(key, polybiusSquare, coordinates.length);
+        
+        // Add coordinates together to get cipher numbers
+        const cipherNumbers = [];
+        for (let i = 0; i < coordinates.length; i++) {
+            const textCoord = coordinates[i];
+            const keyCoord = keyCoordinates[i];
+            if (textCoord && keyCoord) {
+                cipherNumbers.push(textCoord + keyCoord);
+            }
+        }
+        
+        // Join cipher numbers with spaces
+        const encodedText = cipherNumbers.join(' ');
+        
+        return {
+            encodedText,
+            polybiusSquare,
+            polybiusKey,
+            key,
+            coordinates,
+            keyCoordinates,
+            cipherNumbers
+        };
+    }
+
+    // Porta cipher implementation - polyalphabetic substitution cipher
+    portaCipher(text, keyword) {
+        const cleanText = text.toUpperCase().replace(/[^A-Z]/g, '');
+        const cleanKeyword = keyword.toUpperCase().replace(/[^A-Z]/g, '');
+        
+        if (!cleanKeyword) {
+            throw new Error('Keyword cannot be empty');
+        }
+        
+        // Porta cipher tableau - each pair of key letters uses the same row
+        const portaTableau = {
+            'AB': 'NOPQRSTUVWXYZABCDEFGHIJKLM',
+            'CD': 'OPQRSTUVWXYZABCDEFGHIJKLMN',
+            'EF': 'PQRSTUVWXYZABCDEFGHIJKLMNO',
+            'GH': 'QRSTUVWXYZABCDEFGHIJKLMNOP',
+            'IJ': 'RSTUVWXYZABCDEFGHIJKLMNOPQ',
+            'KL': 'STUVWXYZABCDEFGHIJKLMNOPQR',
+            'MN': 'TUVWXYZABCDEFGHIJKLMNOPQRS',
+            'OP': 'UVWXYZABCDEFGHIJKLMNOPQRST',
+            'QR': 'VWXYZABCDEFGHIJKLMNOPQRSTU',
+            'ST': 'WXYZABCDEFGHIJKLMNOPQRSTUV',
+            'UV': 'XYZABCDEFGHIJKLMNOPQRSTUVW',
+            'WX': 'YZABCDEFGHIJKLMNOPQRSTUVWX',
+            'YZ': 'ZABCDEFGHIJKLMNOPQRSTUVWXY'
+        };
+        
+        const plainAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        
+        // Function to get the cipher alphabet for a given key letter
+        const getCipherAlphabet = (keyLetter) => {
+            for (const [keyPair, cipherAlph] of Object.entries(portaTableau)) {
+                if (keyPair.includes(keyLetter)) {
+                    return cipherAlph;
+                }
+            }
+            return plainAlphabet; // fallback
+        };
+        
+        let encodedText = '';
+        let keywordExtended = '';
+        
+        // Extend keyword to match text length
+        for (let i = 0; i < cleanText.length; i++) {
+            keywordExtended += cleanKeyword[i % cleanKeyword.length];
+        }
+        
+        // Encrypt each letter
+        for (let i = 0; i < cleanText.length; i++) {
+            const plainLetter = cleanText[i];
+            const keyLetter = keywordExtended[i];
+            
+            const plainIndex = plainAlphabet.indexOf(plainLetter);
+            const cipherAlphabet = getCipherAlphabet(keyLetter);
+            const encodedLetter = cipherAlphabet[plainIndex];
+            
+            encodedText += encodedLetter;
+        }
+        
+        return {
+            encodedText,
+            keyword: cleanKeyword,
+            extendedKeyword: keywordExtended,
+            tableau: portaTableau
+        };
+    }
+    
+    // Create Polybius square with deranged alphabet
+    createPolybiusSquare(polybiusKey) {
+        // Clean the keyword - remove J and duplicates
+        const cleanKey = polybiusKey.toUpperCase()
+            .replace(/J/g, '') // Remove J entirely
+            .replace(/[^A-Z]/g, ''); // Remove non-letters
+        
+        const uniqueKey = [...new Set(cleanKey)].join('');
+        
+        // Get remaining letters (excluding J)
+        const remainingLetters = CONFIG.STANDARD_ALPHABET
+            .replace('J', '') // Remove J from standard alphabet
+            .split('')
+            .filter(letter => !uniqueKey.includes(letter));
+        
+        // Create deranged alphabet
+        const derangedAlphabet = uniqueKey + remainingLetters.join('');
+        
+        // Create 5x5 grid
+        const square = [];
+        for (let row = 0; row < 5; row++) {
+            const rowArray = [];
+            for (let col = 0; col < 5; col++) {
+                const index = row * 5 + col;
+                rowArray.push(derangedAlphabet[index]);
+            }
+            square.push(rowArray);
+        }
+        
+        return square;
+    }
+    
+    // Convert text to coordinate pairs
+    textToCoordinates(text, polybiusSquare) {
+        const coordinates = [];
+        const cleanText = text.toUpperCase().replace(/[^A-Z]/g, '').replace(/J/g, 'I');
+        
+        for (const char of cleanText) {
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    if (polybiusSquare[row][col] === char) {
+                        // Use 1-based indexing for coordinates
+                        coordinates.push(parseInt(`${row + 1}${col + 1}`));
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return coordinates;
+    }
+    
+    // Convert key to coordinates and repeat as needed
+    keyToCoordinates(key, polybiusSquare, length) {
+        const cleanKey = key.toUpperCase().replace(/[^A-Z]/g, '').replace(/J/g, 'I');
+        const keyCoordinates = [];
+        
+        // Get coordinates for key letters
+        const singleKeyCoords = [];
+        for (const char of cleanKey) {
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    if (polybiusSquare[row][col] === char) {
+                        singleKeyCoords.push(parseInt(`${row + 1}${col + 1}`));
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Repeat key coordinates to match text length
+        for (let i = 0; i < length; i++) {
+            keyCoordinates.push(singleKeyCoords[i % singleKeyCoords.length]);
+        }
+        
+        return keyCoordinates;
     }
 
     // Generic substitution function

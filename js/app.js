@@ -113,6 +113,7 @@ export class QuoteCipher {
                 this.validator.validateAndFixKeywordPositioning('k3', cipherResult);
                 break;
                 
+            // K4 LEGACY CODE - Included for reference only - DO NOT MODIFY
             case 'k4':
                 cipherResult = this.cipherEngine.k4Cipher(quote, keywords.k4Plaintext, keywords.k4Ciphertext);
                 cipherResult.plaintextKeyword = keywords.k4Plaintext;
@@ -124,6 +125,19 @@ export class QuoteCipher {
             case 'random':
                 cipherResult = this.cipherEngine.randomCipher(quote, this.randomAlphabet);
                 cipherDescription = `Random alphabet substitution | Author: ${author}`;
+                break;
+                
+            case 'nihilist':
+                cipherResult = this.cipherEngine.nihilistCipher(quote, keywords.nihilistPolybius, keywords.nihilistKey);
+                cipherResult.polybiusKeyword = keywords.nihilistPolybius;
+                cipherResult.nihilistKey = keywords.nihilistKey;
+                cipherDescription = `Nihilist cipher with Polybius square | Author: ${author}`;
+                break;
+                
+            case 'porta':
+                cipherResult = this.cipherEngine.portaCipher(quote, keywords.porta);
+                cipherResult.keyword = keywords.porta;
+                cipherDescription = `Porta cipher with keyword substitution | Author: ${author}`;
                 break;
         }
 

@@ -69,8 +69,12 @@ export class KeywordGenerator {
             k1: shuffled[0],
             k2: shuffled[1],
             k3: shuffled[2],
+            // K4 LEGACY CODE - Included for reference only - DO NOT MODIFY
             k4Plaintext: shuffled[3],
-            k4Ciphertext: shuffled[4]
+            k4Ciphertext: shuffled[4],
+            nihilistPolybius: shuffled[5],
+            nihilistKey: shuffled[6],
+            porta: shuffled[7]
         };
     }
 

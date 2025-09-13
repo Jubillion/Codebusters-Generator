@@ -11,6 +11,7 @@ export class UIManager {
         this.elements = {
             cipherSelect: document.getElementById('cipher-select'),
             getQuoteBtn: document.getElementById('get-quote-btn'),
+            printReferenceBtn: document.getElementById('print-reference-btn'),
             originalQuote: document.getElementById('original-quote'),
             encodedQuote: document.getElementById('encoded-quote'),
             quoteAuthor: document.getElementById('quote-author'),
@@ -31,10 +32,17 @@ export class UIManager {
             printContent: document.getElementById('print-content'),
             printTitle: document.getElementById('print-title'),
             printCipherInfo: document.getElementById('print-cipher-info'),
-            printAuthor: document.getElementById('print-author'),
+            printInfo: document.getElementById('print-info'),
             printCipherTextTable: document.getElementById('print-cipher-text-table'),
             printSubstitutionTable: document.getElementById('print-substitution-table'),
             printReferenceTable: document.getElementById('print-reference-table'),
+            
+            // Notice elements
+            k4Notice: document.getElementById('k4-notice'),
+            
+            // Porta options elements
+            portaOptions: document.getElementById('porta-options'),
+            hideKeywordToggle: document.getElementById('hide-keyword-toggle'),
             
             // API Key elements
             apiKeyToggle: document.getElementById('api-key-toggle'),
@@ -52,6 +60,7 @@ export class UIManager {
 
     bindEvents(callbacks) {
         this.elements.getQuoteBtn.addEventListener('click', callbacks.onGetQuote);
+        this.elements.printReferenceBtn.addEventListener('click', () => this.printReferenceSheet());
         this.elements.cipherSelect.addEventListener('change', callbacks.onCipherChange);
         this.elements.revealQuoteBtn.addEventListener('click', () => this.revealQuote());
         this.elements.revealKeywordBtn.addEventListener('click', () => this.revealKeywords());
@@ -69,7 +78,16 @@ export class UIManager {
         this.currentAuthor = author;
         this.currentCipherResult = cipherResult;
 
-        this.elements.encodedQuote.textContent = encodedText;
+        // Format encoded text with spaces every 5 letters for Porta cipher only
+        const selectedCipher = this.elements.cipherSelect.value;
+        let displayText = encodedText;
+        
+        if (selectedCipher === 'porta') {
+            // Add spaces every 5 characters for better readability
+            displayText = encodedText.replace(/(.{5})/g, '$1 ').trim();
+        }
+
+        this.elements.encodedQuote.textContent = displayText;
         this.elements.cipherInfo.textContent = cipherDescription;
         
         this.resetRevealButtons();
@@ -77,6 +95,9 @@ export class UIManager {
     }
 
     resetRevealButtons() {
+        // Update K4 notice regardless of quote status
+        this.updateK4Notice();
+        
         // Only show reveal buttons if we have a quote to reveal
         if (!this.currentQuote) {
             this.hideAllRevealButtons();
@@ -91,17 +112,54 @@ export class UIManager {
         this.elements.revealAlphabetBtn.disabled = false;
         this.elements.printCipherBtn.disabled = false;
         this.elements.revealQuoteBtn.textContent = 'Reveal Original Quote';
-        this.elements.revealAlphabetBtn.textContent = 'Reveal Alphabet Table';
         this.elements.printCipherBtn.textContent = 'Print Cipher Worksheet';
         
-        // Show/hide keyword button based on cipher type
+        // Show/hide keyword button and customize labels based on cipher type
         const selectedCipher = this.elements.cipherSelect.value;
         if (selectedCipher === 'random') {
             this.elements.revealKeywordBtn.style.display = 'none';
+            this.elements.revealAlphabetBtn.textContent = 'Reveal Alphabet Table';
+        } else if (selectedCipher === 'nihilist') {
+            this.elements.revealKeywordBtn.style.display = 'inline-block';
+            this.elements.revealKeywordBtn.disabled = false;
+            this.elements.revealKeywordBtn.textContent = 'Reveal Keys';
+            this.elements.revealAlphabetBtn.textContent = 'Reveal Polybius Square';
+        } else if (selectedCipher === 'porta') {
+            this.elements.revealKeywordBtn.style.display = 'inline-block';
+            this.elements.revealKeywordBtn.disabled = false;
+            this.elements.revealKeywordBtn.textContent = 'Reveal Keyword';
+            this.elements.revealAlphabetBtn.style.display = 'none'; // No view table button for Porta
         } else {
             this.elements.revealKeywordBtn.style.display = 'inline-block';
             this.elements.revealKeywordBtn.disabled = false;
             this.elements.revealKeywordBtn.textContent = 'Reveal Keyword(s)';
+            this.elements.revealAlphabetBtn.textContent = 'Reveal Alphabet Table';
+        }
+        
+        // K4 LEGACY CODE - Handle K4 competition notice - DO NOT MODIFY
+        this.updateK4Notice();
+        
+        // Update Porta options visibility
+        this.updatePortaOptions();
+    }
+
+    // K4 LEGACY CODE - Update K4 notice visibility - DO NOT MODIFY
+    updateK4Notice() {
+        const selectedCipher = this.elements.cipherSelect.value;
+        if (selectedCipher === 'k4') {
+            this.elements.k4Notice.style.display = 'flex';
+        } else {
+            this.elements.k4Notice.style.display = 'none';
+        }
+    }
+
+    // Update Porta options visibility
+    updatePortaOptions() {
+        const selectedCipher = this.elements.cipherSelect.value;
+        if (selectedCipher === 'porta') {
+            this.elements.portaOptions.style.display = 'block';
+        } else {
+            this.elements.portaOptions.style.display = 'none';
         }
     }
 
@@ -150,18 +208,33 @@ export class UIManager {
             case 'k3':
                 keywordInfo = `<strong>K3 Keyword:</strong> ${this.currentCipherResult.keyword}`;
                 break;
+            // K4 LEGACY CODE - DO NOT MODIFY
             case 'k4':
                 keywordInfo = `<strong>K4 Keywords:</strong> Plaintext: ${this.currentCipherResult.plaintextKeyword}, Ciphertext: ${this.currentCipherResult.ciphertextKeyword}`;
                 break;
             case 'random':
                 keywordInfo = `<strong>Random Alphabet:</strong> No keyword used - completely randomized substitution`;
                 break;
+            case 'nihilist':
+                keywordInfo = `<strong>Polybius Key:</strong> ${this.currentCipherResult.polybiusKeyword}<br><strong>Key:</strong> ${this.currentCipherResult.nihilistKey}`;
+                break;
+            case 'porta':
+                keywordInfo = `<strong>Porta Keyword:</strong> ${this.currentCipherResult.keyword}`;
+                break;
         }
 
         this.elements.revealedKeywords.innerHTML = keywordInfo;
         this.elements.revealedKeywordContent.style.display = 'block';
         this.elements.revealKeywordBtn.disabled = true;
-        this.elements.revealKeywordBtn.textContent = 'Keywords Revealed';
+        
+        // Update button text based on cipher type
+        if (selectedCipher === 'nihilist') {
+            this.elements.revealKeywordBtn.textContent = 'Keys Revealed';
+        } else if (selectedCipher === 'porta') {
+            this.elements.revealKeywordBtn.textContent = 'Keyword Revealed';
+        } else {
+            this.elements.revealKeywordBtn.textContent = 'Keywords Revealed';
+        }
     }
 
     revealAlphabet() {
@@ -180,18 +253,28 @@ export class UIManager {
             case 'k3':
                 tableHtml = this.generateK3K4Table('k3');
                 break;
+            // K4 LEGACY CODE - DO NOT MODIFY
             case 'k4':
                 tableHtml = this.generateK3K4Table('k4');
                 break;
             case 'random':
                 tableHtml = this.generateRandomTable();
                 break;
+            case 'nihilist':
+                tableHtml = this.generateNihilistTable();
+                break;
         }
 
         this.elements.revealedAlphabet.innerHTML = tableHtml;
         this.elements.revealedAlphabetContent.style.display = 'block';
         this.elements.revealAlphabetBtn.disabled = true;
-        this.elements.revealAlphabetBtn.textContent = 'Alphabet Revealed';
+        
+        // Update button text based on cipher type
+        if (selectedCipher === 'nihilist') {
+            this.elements.revealAlphabetBtn.textContent = 'Polybius Square Revealed';
+        } else {
+            this.elements.revealAlphabetBtn.textContent = 'Alphabet Revealed';
+        }
     }
 
     generateK1K2Table(cipherType) {
@@ -261,6 +344,7 @@ export class UIManager {
         return tableHtml;
     }
 
+    // K3/K4 table generator (K4 LEGACY CODE - DO NOT MODIFY K4 PORTIONS)
     generateK3K4Table(cipherType) {
         let tableHtml = '<div class="alphabet-label">Substitution Table:</div>';
         tableHtml += '<table class="alphabet-table">';
@@ -420,11 +504,44 @@ export class UIManager {
         // Set up print header
         this.elements.printTitle.textContent = 'Cipher Worksheet';
         this.elements.printCipherInfo.textContent = this.elements.cipherInfo.textContent;
-        this.elements.printAuthor.textContent = `— ${this.currentAuthor}`;
+        
+        // Add additional info for ciphers that need keywords shown
+        if (selectedCipher === 'nihilist') {
+            const keywordsText = `Polybius Key: ${this.currentCipherResult.polybiusKeyword} | Key: ${this.currentCipherResult.nihilistKey}`;
+            this.elements.printInfo.textContent = keywordsText;
+        } else if (selectedCipher === 'porta') {
+            // Check if hide keyword is enabled
+            const hideKeyword = this.elements.hideKeywordToggle.checked;
+            if (hideKeyword) {
+                this.elements.printInfo.textContent = '';
+            } else {
+                const keywordText = `Keyword: ${this.currentCipherResult.keyword}`;
+                this.elements.printInfo.textContent = keywordText;
+            }
+        } else {
+            this.elements.printInfo.textContent = '';
+        }
         
         // Generate all print tables
         this.generatePrintCipherTextTable();
-        this.generatePrintSubstitutionTable(selectedCipher);
+        
+        // Only generate substitution table for non-Porta ciphers
+        if (selectedCipher !== 'porta') {
+            this.generatePrintSubstitutionTable(selectedCipher);
+            // Show substitution chart section
+            const substitutionHeader = document.getElementById('substitution-chart-header');
+            const substitutionTable = document.getElementById('print-substitution-table');
+            if (substitutionHeader) substitutionHeader.style.display = 'block';
+            if (substitutionTable) substitutionTable.style.display = 'block';
+        } else {
+            // Clear and hide the substitution table and header for Porta
+            this.elements.printSubstitutionTable.innerHTML = '';
+            // Hide substitution chart section and header
+            const substitutionHeader = document.getElementById('substitution-chart-header');
+            const substitutionTable = document.getElementById('print-substitution-table');
+            if (substitutionHeader) substitutionHeader.style.display = 'none';
+            if (substitutionTable) substitutionTable.style.display = 'none';
+        }
         
         // Add no-print class to screen elements
         document.body.classList.add('printing');
@@ -441,8 +558,45 @@ export class UIManager {
         }, 1000);
     }
 
+    printReferenceSheet() {
+        // Open the reference sheet PDF in a new window/tab for printing
+        const referenceSheetUrl = './assets/reference-sheet.pdf';
+        
+        // Create a new window/tab and navigate to the PDF
+        const printWindow = window.open(referenceSheetUrl, '_blank');
+        
+        // Focus on the new window/tab for better user experience
+        if (printWindow) {
+            printWindow.focus();
+            
+            // Wait for the PDF to load, then trigger print dialog
+            printWindow.addEventListener('load', () => {
+                setTimeout(() => {
+                    printWindow.print();
+                }, 500);
+            });
+        } else {
+            // Fallback if popup is blocked
+            alert('Please allow popups to print the reference sheet, or navigate to ./assets/reference-sheet.pdf manually.');
+        }
+    }
+
     generatePrintCipherTextTable() {
-        const encodedText = this.currentCipherResult.encodedText.toUpperCase();
+        const selectedCipher = this.elements.cipherSelect.value;
+        
+        // Special handling for nihilist cipher
+        if (selectedCipher === 'nihilist') {
+            this.generatePrintNihilistCipherTable();
+            return;
+        }
+        
+        let encodedText = this.currentCipherResult.encodedText.toUpperCase();
+        
+        // For Porta cipher, add spaces every 5 characters for better readability
+        if (selectedCipher === 'porta') {
+            encodedText = encodedText.replace(/(.{5})/g, '$1 ').trim();
+        }
+        
         const charsPerRow = 26; // Match the 26 columns of the substitution table
         
         let tableHtml = '';
@@ -499,7 +653,56 @@ export class UIManager {
         this.elements.printCipherTextTable.innerHTML = tableHtml;
     }
 
+    generatePrintNihilistCipherTable() {
+        // For Nihilist cipher, show the cipher numbers in a simple table
+        const cipherNumbers = this.currentCipherResult.cipherNumbers;
+        const numbersPerRow = 26; // Numbers per row to match other tables
+        
+        let tableHtml = '';
+        
+        // Split cipher numbers into rows
+        let currentPos = 0;
+        
+        while (currentPos < cipherNumbers.length) {
+            let numbersInRow = 0;
+            let rowEnd = currentPos;
+            
+            // Find where to break the row (up to numbersPerRow numbers)
+            while (rowEnd < cipherNumbers.length && numbersInRow < numbersPerRow) {
+                rowEnd++;
+                numbersInRow++;
+            }
+            
+            // Create a table for this segment
+            let segmentTable = '<table class="worksheet-table cipher-text-table">';
+            let numberRow = '<tr>';
+            let blankRow = '<tr>';
+            
+            // Add cipher numbers to top row, blanks to bottom row
+            for (let i = currentPos; i < rowEnd && i < cipherNumbers.length; i++) {
+                const number = cipherNumbers[i];
+                numberRow += `<td class="cipher-char">${number}</td>`;
+                blankRow += `<td class="blank-cell"></td>`;
+            }
+            
+            numberRow += '</tr>';
+            blankRow += '</tr>';
+            segmentTable += numberRow + blankRow + '</table>';
+            
+            tableHtml += segmentTable;
+            currentPos = rowEnd;
+        }
+        
+        this.elements.printCipherTextTable.innerHTML = tableHtml;
+    }
+
     generatePrintSubstitutionTable(selectedCipher) {
+        // Special handling for nihilist cipher
+        if (selectedCipher === 'nihilist') {
+            this.generatePrintNihilistTable();
+            return;
+        }
+        
         // Calculate letter frequencies in the cipher text
         const frequencies = this.calculateLetterFrequencies();
         
@@ -634,5 +837,58 @@ export class UIManager {
         
         tableHtml += '</table>';
         this.elements.printReferenceTable.innerHTML = tableHtml;
+    }
+
+    generateNihilistTable() {
+        const result = this.currentCipherResult;
+        const polybiusSquare = result.polybiusSquare;
+        
+        let tableHtml = '<div class="alphabet-label">Polybius Square (I/J combined):</div>';
+        tableHtml += '<table class="alphabet-table polybius-table">';
+        
+        // Header row with column numbers
+        tableHtml += '<tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>';
+        
+        // Add each row
+        for (let row = 0; row < 5; row++) {
+            tableHtml += `<tr><th>${row + 1}</th>`;
+            for (let col = 0; col < 5; col++) {
+                const letter = polybiusSquare[row][col];
+                tableHtml += `<td>${letter}</td>`;
+            }
+            tableHtml += '</tr>';
+        }
+        
+        tableHtml += '</table>';
+        
+        // Add encoding example
+        tableHtml += '<div class="cipher-explanation">';
+        tableHtml += '<strong>How it works:</strong><br>';
+        tableHtml += `1. Each letter is converted to coordinates (row, column)<br>`;
+        tableHtml += `2. Key "${result.nihilistKey}" is repeated and converted to coordinates<br>`;
+        tableHtml += `3. Text coordinates + Key coordinates = Cipher numbers`;
+        tableHtml += '</div>';
+        
+        return tableHtml;
+    }
+
+    generatePrintNihilistTable() {
+        let tableHtml = '<table class="worksheet-table polybius-square-print">';
+        tableHtml += '<tr><th colspan="6">Polybius Square (I/J combined)</th></tr>';
+        
+        // Header row with column numbers
+        tableHtml += '<tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>';
+        
+        // Add each row with blank cells for user to fill in
+        for (let row = 0; row < 5; row++) {
+            tableHtml += `<tr><th>${row + 1}</th>`;
+            for (let col = 0; col < 5; col++) {
+                tableHtml += `<td class="blank-substitution"></td>`;
+            }
+            tableHtml += '</tr>';
+        }
+        
+        tableHtml += '</table>';
+        this.elements.printSubstitutionTable.innerHTML = tableHtml;
     }
 }

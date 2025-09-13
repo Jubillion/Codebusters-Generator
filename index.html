@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quote Cipher - Codebusters</title>
+    <title>Codebusters Generator</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,8 +20,11 @@
                     <option value="k1">K1 - Mixed Plaintext</option>
                     <option value="k2">K2 - Mixed Ciphertext</option>
                     <option value="k3">K3 - Mixed Both Same Key</option>
-                    <option value="k4">K4 - Mixed Both Different Keys</option>
+                    <!-- K4 LEGACY CODE: Included for reference only - DO NOT MODIFY OR UNCOMMENT -->
+                    <!--<option value="k4">K4 - Mixed Both Different Keys</option>-->
                     <option value="random">Random Alphabet</option>
+                    <option value="porta">Porta Cipher</option>
+                    <option value="nihilist">Nihilist Cipher</option>
                 </select>
                 
                 <div class="api-key-section">
@@ -41,6 +44,15 @@
                 </div>
                 
                 <button id="get-quote-btn">Get Random Quote</button>
+                <button id="print-reference-btn">Print Reference Sheet</button>
+            </div>
+
+            <!-- K4 Competition Notice -->
+            <div id="k4-notice" class="notice-card notice-warning" style="display: none;">
+                <div class="notice-content">
+                    <strong>Competition Notice:</strong> K4 substitutions are not used in Science Olympiad Codebusters competitions as of
+                    the 2025-2026 season. Also note that the alphabets for K4 are not generated using the official ACA specifications.
+                </div>
             </div>
 
             <div class="quote-section">
@@ -69,6 +81,14 @@
                         <div id="revealed-alphabet" class="revealed-alphabet"></div>
                     </div>
                 </div>
+                
+                <!-- Porta-specific options -->
+                <div id="porta-options" class="porta-options" style="display: none;">
+                    <label class="hide-keyword-label">
+                        <input type="checkbox" id="hide-keyword-toggle">
+                        Hide keyword when printing worksheet
+                    </label>
+                </div>
             </div>
 
             <div class="loading" id="loading" style="display: none;">
@@ -86,13 +106,13 @@
             <div class="print-header">
                 <h1 id="print-title">Cipher Worksheet</h1>
                 <div id="print-cipher-info" class="cipher-info"></div>
-                <div id="print-author" class="author"></div>
+                <div id="print-info" class="print-info"></div>
             </div>
             
             <div class="section-header">Decode the Message:</div>
             <div id="print-cipher-text-table"></div>
             
-            <div class="section-header">Letter Substitution Chart:</div>
+            <div id="substitution-chart-header" class="section-header">Letter Substitution Chart:</div>
             <div id="print-substitution-table"></div>
         </div>
     </div>

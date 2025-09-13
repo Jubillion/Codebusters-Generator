@@ -40,9 +40,12 @@ export class Validator {
                 case 'k3':
                     return this.checkKeywordOrder(cipherResult.plaintextAlphabet, cipherResult.keyword) &&
                            this.checkKeywordOrder(cipherResult.ciphertextAlphabet, cipherResult.keyword);
-                case 'k4':
+                case 'k4': // K4 LEGACY CODE - Included for reference only - DO NOT MODIFY
                     return this.checkKeywordOrder(cipherResult.plaintextAlphabet, cipherResult.plaintextKeyword) &&
                            this.checkKeywordOrder(cipherResult.ciphertextAlphabet, cipherResult.ciphertextKeyword);
+                case 'porta':
+                    // Porta cipher doesn't use standard alphabets, so keyword validation is different
+                    return this.validatePortaKeyword(cipherResult.keyword);
                 default:
                     return true;
             }
@@ -95,8 +98,11 @@ export class Validator {
                 case 'k3':
                     this.validateK3Keywords(cipherResult, results);
                     break;
-                case 'k4':
+                case 'k4': // K4 LEGACY CODE - Included for reference only - DO NOT MODIFY
                     this.validateK4Keywords(cipherResult, results);
+                    break;
+                case 'porta':
+                    this.validatePortaKeywords(cipherResult, results);
                     break;
             }
         } catch (error) {
@@ -146,6 +152,7 @@ export class Validator {
         this.validateKeywordInAlphabet(ciphertextAlphabet, cleanKeyword, 'K3 ciphertext', results);
     }
 
+    // K4 LEGACY CODE - Included for reference only - DO NOT MODIFY
     validateK4Keywords(cipherResult, results) {
         const plaintextAlphabet = cipherResult.plaintextAlphabet;
         const ciphertextAlphabet = cipherResult.ciphertextAlphabet;
@@ -157,6 +164,26 @@ export class Validator {
         
         this.validateKeywordInAlphabet(plaintextAlphabet, cleanPlaintextKeyword, 'K4 plaintext', results);
         this.validateKeywordInAlphabet(ciphertextAlphabet, cleanCiphertextKeyword, 'K4 ciphertext', results);
+    }
+
+    validatePortaKeywords(cipherResult, results) {
+        const keyword = cipherResult.keyword;
+        const cleanKeyword = [...new Set(keyword.toUpperCase().replace(/[^A-Z]/g, ''))].join('');
+        
+        // Porta cipher validation is simpler - just ensure keyword is valid
+        if (!cleanKeyword) {
+            results.isValid = false;
+            results.errors.push('Porta cipher keyword cannot be empty');
+        }
+        
+        // Store clean keyword for reference
+        results.cleanKeyword = cleanKeyword;
+    }
+
+    validatePortaKeyword(keyword) {
+        // Simple validation for Porta keyword - just needs to be non-empty
+        const cleanKeyword = keyword.toUpperCase().replace(/[^A-Z]/g, '');
+        return cleanKeyword.length > 0;
     }
 
     validateKeywordInAlphabet(alphabet, keyword, context, results) {
