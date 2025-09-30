@@ -113,6 +113,24 @@ export class QuoteCipher {
                 this.validator.validateAndFixKeywordPositioning('k3', cipherResult);
                 break;
                 
+            case 'k1-patristocrat':
+                cipherResult = this.cipherEngine.k1Cipher(quote, keywords.k1);
+                cipherResult.keyword = keywords.k1;
+                // Remove all non-alphabetical characters for Patristocrat
+                cipherResult.encodedText = cipherResult.encodedText.replace(/[^A-Za-z]/g, '');
+                cipherDescription = `K1 Patristocrat - Mixed plaintext alphabet, no spaces/punctuation | Author: ${author}`;
+                this.validator.validateAndFixKeywordPositioning('k1', cipherResult);
+                break;
+                
+            case 'k2-patristocrat':
+                cipherResult = this.cipherEngine.k2Cipher(quote, keywords.k2);
+                cipherResult.keyword = keywords.k2;
+                // Remove all non-alphabetical characters for Patristocrat
+                cipherResult.encodedText = cipherResult.encodedText.replace(/[^A-Za-z]/g, '');
+                cipherDescription = `K2 Patristocrat - Mixed ciphertext alphabet, no spaces/punctuation | Author: ${author}`;
+                this.validator.validateAndFixKeywordPositioning('k2', cipherResult);
+                break;
+                
             // K4 LEGACY CODE - Included for reference only - DO NOT MODIFY
             case 'k4':
                 cipherResult = this.cipherEngine.k4Cipher(quote, keywords.k4Plaintext, keywords.k4Ciphertext);
@@ -138,6 +156,16 @@ export class QuoteCipher {
                 cipherResult = this.cipherEngine.portaCipher(quote, keywords.porta);
                 cipherResult.keyword = keywords.porta;
                 cipherDescription = `Porta cipher with keyword substitution | Author: ${author}`;
+                break;
+                
+            case 'columnar':
+                cipherResult = this.cipherEngine.columnarCipher(quote);
+                cipherDescription = `Complete columnar transposition cipher | Author: ${author}`;
+                break;
+                
+            case 'hill':
+                cipherResult = this.cipherEngine.hillCipher(quote);
+                cipherDescription = `2x2 Hill cipher | Author: ${author}`;
                 break;
         }
 

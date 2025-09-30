@@ -699,6 +699,215 @@ export class CipherEngine {
         return keyCoordinates;
     }
 
+    // Complete Columnar Transposition Cipher
+    columnarCipher(text) {
+        // Generate random number of columns (1-9)
+        const numColumns = Math.floor(Math.random() * 6) + 4;
+        
+        // Generate random column ordering
+        const columns = Array.from({length: numColumns}, (_, i) => i + 1);
+        const originalColumns = [...columns];
+        
+        // Shuffle the columns to create the key ordering
+        // Keep shuffling until we get a different order than the original
+        let shuffleAttempts = 0;
+        const maxShuffleAttempts = 100; // Prevent infinite loop
+        
+        do {
+            // Fisher-Yates shuffle
+            for (let i = columns.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [columns[i], columns[j]] = [columns[j], columns[i]];
+            }
+            shuffleAttempts++;
+        } while (this.arraysEqual(columns, originalColumns) && shuffleAttempts < maxShuffleAttempts);
+        
+        // If we somehow still have the original order after max attempts (very rare),
+        // manually swap the first two elements to ensure different order
+        if (this.arraysEqual(columns, originalColumns) && numColumns > 1) {
+            [columns[0], columns[1]] = [columns[1], columns[0]];
+        }
+        
+        // Clean text - remove non-alphabetic characters and convert to uppercase
+        const cleanText = text.toUpperCase().replace(/[^A-Z]/g, '');
+        
+        // Pad text to fill complete rows if needed
+        const padding = numColumns - (cleanText.length % numColumns);
+        const paddedText = cleanText + 'X'.repeat(padding === numColumns ? 0 : padding);
+        
+        // Create grid
+        const numRows = Math.ceil(paddedText.length / numColumns);
+        const grid = [];
+        
+        // Fill grid row by row
+        for (let row = 0; row < numRows; row++) {
+            const gridRow = [];
+            for (let col = 0; col < numColumns; col++) {
+                const index = row * numColumns + col;
+                gridRow.push(index < paddedText.length ? paddedText[index] : '');
+            }
+            grid.push(gridRow);
+        }
+        
+        // Read columns in key order
+        let encodedText = '';
+        for (let keyPos = 1; keyPos <= numColumns; keyPos++) {
+            const colIndex = columns.indexOf(keyPos);
+            for (let row = 0; row < numRows; row++) {
+                if (grid[row][colIndex]) {
+                    encodedText += grid[row][colIndex];
+                }
+            }
+        }
+        
+        return {
+            encodedText,
+            numColumns,
+            originalColumns,
+            keyOrder: columns,
+            grid,
+            paddedText
+        };
+    }
+
+    // 2x2 Hill Cipher
+    hillCipher(text) {
+        // Generate a random invertible 2x2 matrix (either numeric or word-based)
+        const matrixData = this.generateInvertibleMatrix();
+        
+        // Clean text - remove non-alphabetic characters and convert to uppercase
+        const cleanText = text.toUpperCase().replace(/[^A-Z]/g, '');
+        
+        // Pad text to even length if needed
+        const paddedText = cleanText.length % 2 === 0 ? cleanText : cleanText + 'X';
+        
+        // Encrypt in pairs using numeric matrix
+        let encodedText = '';
+        for (let i = 0; i < paddedText.length; i += 2) {
+            const char1 = paddedText[i];
+            const char2 = paddedText[i + 1];
+            
+            // Convert to numbers (A=0, B=1, ..., Z=25)
+            const num1 = char1.charCodeAt(0) - 65;
+            const num2 = char2.charCodeAt(0) - 65;
+            
+            // Matrix multiplication: [a b] [x] = [ax + by]
+            //                        [c d] [y]   [cx + dy]
+            const result1 = (matrixData.numericMatrix[0][0] * num1 + matrixData.numericMatrix[0][1] * num2) % 26;
+            const result2 = (matrixData.numericMatrix[1][0] * num1 + matrixData.numericMatrix[1][1] * num2) % 26;
+            
+            // Convert back to letters
+            encodedText += String.fromCharCode(result1 + 65);
+            encodedText += String.fromCharCode(result2 + 65);
+        }
+        
+        return {
+            encodedText,
+            matrix: matrixData.displayMatrix,
+            numericMatrix: matrixData.numericMatrix,
+            isWordBased: matrixData.isWordBased,
+            keyword: matrixData.keyword,
+            paddedText
+        };
+    }
+
+    // Generate a random 2x2 matrix that is invertible mod 26
+    generateInvertibleMatrix() {
+        // Randomly decide whether to use word-based or numeric matrix
+        const useWordBased = Math.random() < 0.5;
+        
+        if (useWordBased) {
+            return this.generateWordBasedMatrix();
+        } else {
+            return this.generateNumericMatrix();
+        }
+    }
+    
+    // Generate matrix from a 4-letter word (all keywords are pre-verified as invertible)
+    generateWordBasedMatrix() {
+        // Select a random 4-letter word from pre-verified invertible keywords
+        const hillKeywords = CONFIG.HILL_CIPHER_KEYWORDS;
+        const keyword = hillKeywords[Math.floor(Math.random() * hillKeywords.length)];
+        
+        // Convert letters to numbers for the numeric matrix
+        const numericMatrix = [
+            [keyword.charCodeAt(0) - 65, keyword.charCodeAt(1) - 65],
+            [keyword.charCodeAt(2) - 65, keyword.charCodeAt(3) - 65]
+        ];
+        
+        // Create display matrix with letters
+        const displayMatrix = [
+            [keyword[0], keyword[1]],
+            [keyword[2], keyword[3]]
+        ];
+        
+        return {
+            displayMatrix,
+            numericMatrix,
+            isWordBased: true,
+            keyword
+        };
+    }
+    
+    // Generate numeric matrix
+    generateNumericMatrix() {
+        let matrix;
+        let det;
+        let attempts = 0;
+        const maxAttempts = 1000;
+        
+        do {
+            // Generate random 2x2 matrix with values 0-25
+            matrix = [
+                [Math.floor(Math.random() * 26), Math.floor(Math.random() * 26)],
+                [Math.floor(Math.random() * 26), Math.floor(Math.random() * 26)]
+            ];
+            
+            det = this.determinant2x2(matrix);
+            attempts++;
+        } while (this.gcd(det, 26) !== 1 && attempts < maxAttempts);
+        
+        // If we couldn't find an invertible matrix, use a known good one
+        if (this.gcd(det, 26) !== 1) {
+            matrix = [[3, 2], [5, 7]]; // Known invertible matrix
+        }
+        
+        return {
+            displayMatrix: matrix,
+            numericMatrix: matrix,
+            isWordBased: false,
+            keyword: null
+        };
+    }
+
+
+    // Calculate determinant of 2x2 matrix
+    determinant2x2(matrix) {
+        const det = (matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]) % 26;
+        return det < 0 ? det + 26 : det; // Ensure positive result
+    }
+
+    // Calculate GCD using Euclidean algorithm
+    gcd(a, b) {
+        a = Math.abs(a);
+        b = Math.abs(b);
+        while (b !== 0) {
+            const temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
+
+    // Helper method to check if two arrays are equal
+    arraysEqual(arr1, arr2) {
+        if (arr1.length !== arr2.length) return false;
+        for (let i = 0; i < arr1.length; i++) {
+            if (arr1[i] !== arr2[i]) return false;
+        }
+        return true;
+    }
+
     // Generic substitution function
     substituteText(text, plaintextAlphabet, ciphertextAlphabet) {
         return text.split('').map(char => {

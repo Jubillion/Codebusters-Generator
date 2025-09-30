@@ -33,6 +33,16 @@ export const CONFIG = {
         'CLARITY', 'DIGNITY', 'ELOQUENT', 'FERVENT', 'GENUINE', 'HUMBLE', 'INSPIRE', 'JUSTICE'
     ],
 
+    // List of 4-letter keywords specifically for Hill cipher matrices (all pre-verified as invertible)
+    HILL_CIPHER_KEYWORDS: [
+        'HILL', 'TEXT', 'HEAT', 'FAST', 'HIGH', 'DEEP', 'BOLD', 'HARD', 'TEAL', 'JUMP',
+        'HELP', 'FIND', 'HEAR', 'BEST', 'REAL', 'ROOT', 'TURN', 'BURN', 'BOIL', 'LEAF',
+        'HERB', 'PEAR', 'BIRD', 'FISH', 'BEAR', 'LION', 'BOAT', 'ROAD', 'PATH', 'DOOR',
+        'ROOF', 'HALL', 'LAMP', 'BOWL', 'DISH', 'BELL', 'HORN', 'HARP', 'BEAT', 'BOLT',
+        'LEAD', 'FOIL', 'BULB', 'POET', 'LORD', 'TEST', 'READ', 'TELL', 'FILL', 'FOLD',
+        'BEND', 'ROLL', 'PUSH'
+    ],
+
     FALLBACK_QUOTES: [
         { q: "The only way to do great work is to love what you do.", a: "Steve Jobs" },
         { q: "Life is what happens to you while you're busy making other plans.", a: "John Lennon" },

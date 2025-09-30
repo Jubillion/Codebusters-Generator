@@ -17,14 +17,18 @@
             <div class="controls">
                 <label for="cipher-select">Choose Cipher:</label>
                 <select id="cipher-select">
-                    <option value="k1">K1 - Mixed Plaintext</option>
-                    <option value="k2">K2 - Mixed Ciphertext</option>
-                    <option value="k3">K3 - Mixed Both Same Key</option>
+                    <option value="k1">K1 Aristocrat</option>
+                    <option value="k2">K2 Aristocrat</option>
+                    <option value="k3">K3 Aristocrat</option>
                     <!-- K4 LEGACY CODE: Included for reference only - DO NOT MODIFY OR UNCOMMENT -->
                     <!--<option value="k4">K4 - Mixed Both Different Keys</option>-->
-                    <option value="random">Random Alphabet</option>
+                    <option value="k1-patristocrat">K1 Patristocrat</option>
+                    <option value="k2-patristocrat">K2 Patristocrat</option>
+                    <option value="random">Random Substitution</option>
                     <option value="porta">Porta Cipher</option>
+                    <option value="hill">2x2 Hill Cipher</option>
                     <option value="nihilist">Nihilist Cipher</option>
+                    <option value="columnar">Complete Columnar Transposition Cipher</option>
                 </select>
                 
                 <div class="api-key-section">
@@ -66,6 +70,8 @@
                         <button id="reveal-quote-btn" class="reveal-btn" style="display: none;">Reveal Original Quote</button>
                         <button id="reveal-keyword-btn" class="reveal-btn" style="display: none;">Reveal Keyword(s)</button>
                         <button id="reveal-alphabet-btn" class="reveal-btn" style="display: none;">Reveal Alphabet Table</button>
+                        <button id="reveal-columns-btn" class="reveal-btn" style="display: none;">Reveal Column Count</button>
+                        <button id="reveal-ordering-btn" class="reveal-btn" style="display: none;">Reveal Column Ordering</button>
                         <button id="print-cipher-btn" class="reveal-btn" style="display: none;">Print Cipher Worksheet</button>
                     </div>
                     
@@ -80,6 +86,14 @@
                     <div id="revealed-alphabet-content" class="revealed-content" style="display: none;">
                         <div id="revealed-alphabet" class="revealed-alphabet"></div>
                     </div>
+                    
+                    <div id="revealed-columns-content" class="revealed-content" style="display: none;">
+                        <div id="revealed-columns" class="revealed-columns"></div>
+                    </div>
+                    
+                    <div id="revealed-ordering-content" class="revealed-content" style="display: none;">
+                        <div id="revealed-ordering" class="revealed-ordering"></div>
+                    </div>
                 </div>
                 
                 <!-- Porta-specific options -->
@@ -87,6 +101,14 @@
                     <label class="hide-keyword-label">
                         <input type="checkbox" id="hide-keyword-toggle">
                         Hide keyword when printing worksheet
+                    </label>
+                </div>
+                
+                <!-- Nihilist-specific options -->
+                <div id="nihilist-options" class="nihilist-options" style="display: none;">
+                    <label class="hide-keyword-label">
+                        <input type="checkbox" id="hide-nihilist-keys-toggle">
+                        Hide keys when printing worksheet
                     </label>
                 </div>
             </div>

@@ -83,7 +83,7 @@ export class ApiManager {
 
     async fetchQuote() {
         const apiKey = this.getApiKey();
-        
+
         if (apiKey) {
             // Use API key for unlimited requests
             return await this.fetchQuoteWithKey(apiKey);
@@ -100,11 +100,11 @@ export class ApiManager {
                     'Accept': 'application/json',
                 }
             });
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const data = await response.json();
             if (data && data.length > 0) {
                 return data[0];
@@ -113,7 +113,7 @@ export class ApiManager {
             }
         } catch (error) {
             console.error('Error with API key request:', error);
-            
+
             // If API key fails, fall back to free tier
             this.displayWarning('API key request failed, falling back to free tier');
             return await this.fetchQuoteFromApi();
@@ -125,7 +125,7 @@ export class ApiManager {
             // Try to use a CORS proxy first
             let response;
             let data;
-            
+
             try {
                 // Attempt 1: Try direct API call
                 response = await fetch('https://zenquotes.io/api/random', {
@@ -133,15 +133,22 @@ export class ApiManager {
                         'Accept': 'application/json',
                     }
                 });
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+
+                // Handle specific rate limit response
+                if (response.ok && await response.text() === "[{\"q\":\"Too many requests. Obtain an auth key for unlimited access.\"," +
+                    "\"a\":\"zenquotes.io\",\"h\":\"Too many requests. Obtain an auth key for unlimited access @ zenquotes.io\"}]") {
+                    throw new Error(`HTTP error! status: 429`);
+                }
+
                 data = await response.json();
+
             } catch (corsError) {
                 console.log('Direct API call failed, trying CORS proxy:', corsError);
-                
+
                 // Attempt 2: Try with a CORS proxy
                 try {
                     response = await fetch('https://api.allorigins.win/get?url=https://zenquotes.io/api/random', {
@@ -149,19 +156,26 @@ export class ApiManager {
                             'Accept': 'application/json',
                         }
                     });
-                    
+
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
-                    
+
                     const proxyData = await response.json();
+
+                    // Handle specific rate limit response
+                    if (response.ok && proxyData.contents === "[{\"q\":\"Too many requests. Obtain an auth key for unlimited access.\"," +
+                        "\"a\":\"zenquotes.io\",\"h\":\"Too many requests. Obtain an auth key for unlimited access @ zenquotes.io\"}]") {
+                        throw new Error(`HTTP error! status: 429`);
+                    }
+
                     data = JSON.parse(proxyData.contents);
                 } catch (proxyError) {
                     console.log('CORS proxy also failed:', proxyError);
                     throw corsError; // Use original error
                 }
             }
-            
+
             if (data && data.length > 0) {
                 return data[0];
             } else {

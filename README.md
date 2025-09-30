@@ -5,12 +5,15 @@ A simple web application that fetches random quotes from the ZenQuotes API and e
 ## Features
 
 - **Random Quote Fetching**: Gets quotes from ZenQuotes.io API (no API key required)
-- **Five Cipher Types** with **Random Keywords**:
+- **Eight Cipher Types** with **Random Keywords**:
   - **K1**: Mixed plaintext alphabet, standard ciphertext alphabet
   - **K2**: Standard plaintext alphabet, mixed ciphertext alphabet
   - **K3**: Both alphabets mixed with same random keyword
-  - ~~**K4**: Both alphabets mixed with different random keywords~~ *(removed)*
+  - ~~**K4**: Both alphabets mixed with different random keywords~~ *(deprecated - legacy code)*
   - **Random Alphabet**: Completely randomized substitution alphabet
+  - **Porta Cipher**: Polyalphabetic cipher with keyword-based tableau
+  - **Complete Columnar Transposition**: Transposition cipher with random column ordering
+  - **2x2 Hill Cipher**: Matrix-based cipher with guaranteed invertible encryption matrix
   - **Nihilist**: Number-based cipher using Polybius square and key addition
 - **Cryptogram Format**: Shows only encoded text (no plaintext) for solving practice
 - **100+ Random Keywords**: Each cipher uses randomly selected keywords from a large pool
@@ -45,14 +48,29 @@ A simple web application that fetches random quotes from the ZenQuotes API and e
 ### K3 Cipher
 
 - **Both alphabets mixed** using the **same random keyword**
+
+### K1 Patristocrat
+
+- **Mixed plaintext alphabet** using random keyword, **standard ciphertext alphabet**
+- **All spaces and punctuation removed** from final ciphertext
+- Same substitution as K1 but continuous letter string output
+- Example: With keyword "MOUNTAIN" → "HELLO WORLD!" → "GDKKNNQZKP"
+
+### K2 Patristocrat
+
+- **Standard plaintext alphabet**, **mixed ciphertext alphabet** using random keyword
+- **All spaces and punctuation removed** from final ciphertext
+- Same substitution as K2 but continuous letter string output
+- Example: With keyword "CRYSTAL" → "HELLO WORLD!" → "AJCCQSQMCP"
 - Creates more complex substitution patterns
 - Example: With keyword "PHOENIX" → "HELLO" → "BJCCQ"
 
-### K4 Cipher
+### K4 Cipher *(Deprecated - Legacy Code Only)*
 
-- **Both alphabets mixed** using **different random keywords**
-- Most complex substitution pattern with two independent keywords
-- Example: With keywords "GALAXY/OCEAN" → "HELLO" → "FJDDQ"
+- ~~**Both alphabets mixed** using **different random keywords**~~
+- ~~Most complex substitution pattern with two independent keywords~~
+- ~~Example: With keywords "GALAXY/OCEAN" → "HELLO" → "FJDDQ"~~
+- **Note**: K4 substitutions are not used in Science Olympiad Codebusters competitions as of the 2025-2026 season
 
 ### Random Alphabet
 
@@ -73,6 +91,47 @@ A simple web application that fetches random quotes from the ZenQuotes API and e
 - **Example**: With keys "MOUNTAIN/CIPHER" → "HELLO" → "52 73 64 64 75"
 - **Print worksheets**: Custom format with number grids and blank Polybius square
 
+### Porta Cipher
+
+- **Polyalphabetic substitution** using keyword and Porta tableau
+- **Process**:
+  1. Keyword repeated to match message length
+  2. Each letter uses different cipher alphabet based on keyword letter
+  3. Porta tableau provides 13 different alphabets (A/B use same, C/D use same, etc.)
+- **Self-Reciprocal**: Same key encrypts and decrypts
+- **Example**: With keyword "CIPHER" → "HELLO" → "MGDMP"
+- **Output**: Grouped in blocks of 5 letters for readability
+- **Print worksheets**: No substitution chart included (uses tableau instead)
+
+### Complete Columnar Transposition
+
+- **Transposition cipher** that rearranges letter positions rather than substituting
+- **Random column count**: Uses 4-9 columns randomly
+- **Process**:
+  1. Text arranged in grid by rows
+  2. Columns numbered and shuffled randomly
+  3. Text read out by columns in key order
+- **Guaranteed scrambling**: Ensures columns are never in natural order (1,2,3...)
+- **Example**: 5 columns, key order [3,1,5,2,4] rearranges "HELLO WORLD" grid
+- **Reveal options**: Separate buttons for column count and column ordering with grid visualization
+- **Print worksheets**: No substitution chart included (transposition-based cipher)
+
+### 2x2 Hill Cipher
+
+- **Matrix-based encryption** using a randomly generated 2x2 matrix
+- **Two matrix types**: Numeric matrices (numbers 0-25) or word-based matrices (4-letter keywords)
+- **Guaranteed invertibility**: All matrices ensured invertible (matrix determinant and 26 are coprime)
+- **Word-based matrices**: Uses pre-verified invertible 4-letter keywords with letters arranged in reading order
+- **Process**:
+  1. Text divided into pairs of letters (A=0, B=1, ..., Z=25)
+  2. Each pair multiplied by the 2x2 encryption matrix (letters converted to numbers)
+  3. Results taken modulo 26 and converted back to letters
+- **Auto-padding**: Odd-length text padded with 'X'
+- **Examples**:
+  - Numeric matrix [[3,2],[5,7]] → "HE" becomes "DI"
+  - Word matrix "HILL" → [[H,I],[L,L]] → encryption using numeric equivalents
+- **Print worksheets**: Shows the encryption matrix (letters or numbers) instead of substitution chart
+
 ### Keyword Pool
 
 The app randomly selects from 200+ keywords including: ADVENTURE, BEAUTIFUL, CHALLENGE, DISCOVERY, ELEPHANT, FANTASTIC, GALAXY, HARMONY, IMAGINATION, JOURNEY, KNOWLEDGE, LIGHTHOUSE, MOUNTAIN, NAUTICAL, OCEAN, PARADISE, QUALITY, RAINBOW, SUNSHINE, TREASURE, UNIVERSE, VICTORY, WISDOM, and many more.
@@ -81,7 +140,7 @@ The app randomly selects from 200+ keywords including: ADVENTURE, BEAUTIFUL, CHA
 
 - `index.html` - Main HTML structure
 - `style.css` - Styling and responsive design
-- `script.js` - JavaScript functionality and cipher algorithms
+- `js/` - Modular JavaScript files (see File Structure section below)
 
 ## Notes
 
@@ -120,7 +179,8 @@ The app randomly selects from 200+ keywords including: ADVENTURE, BEAUTIFUL, CHA
 - **Purpose**: Centralized configuration and data constants
 - **Contents**:
   - Standard alphabet constant
-  - Keyword list (100+ words)
+  - Keyword list (200+ words for general ciphers)
+  - Hill cipher keyword list (45 pre-verified invertible 4-letter words)
   - Fallback quotes
   - KeywordGenerator class for managing cipher keywords
   - Random alphabet generation
@@ -139,8 +199,12 @@ The app randomly selects from 200+ keywords including: ADVENTURE, BEAUTIFUL, CHA
 
 - **Purpose**: All cryptographic operations and alphabet generation
 - **Contents**:
-  - K1, K2, K3, K4 cipher implementations
+  - K1, K2, K3 cipher implementations
+  - K4 cipher implementation *(deprecated - legacy code only)*
   - Random alphabet cipher
+  - Porta cipher with polyalphabetic tableau
+  - Complete columnar transposition with guaranteed scrambling
+  - 2x2 Hill cipher with invertible matrix generation
   - Nihilist cipher with Polybius square
   - Smart alphabet rearrangement (Caesar-style shifting)
   - Identity mapping prevention
@@ -154,10 +218,12 @@ The app randomly selects from 200+ keywords including: ADVENTURE, BEAUTIFUL, CHA
   - Event binding
   - Quote and cipher result display
   - Reveal functionality (quote, keywords, alphabet tables)
+  - Columnar cipher reveals (column count and ordering with grid visualization)
+  - Hill cipher matrix display (encryption matrix with determinant)
   - Custom Nihilist cipher displays (Polybius square, number tables)
-  - Print worksheet generation with cipher-specific layouts
+  - Print worksheet generation with cipher-specific layouts (matrix for Hill, excludes substitution charts for Porta and Columnar)
   - Error message display
-  - Table generation for alphabet and Polybius square visualization
+  - Table generation for alphabet, Polybius square, and columnar grid visualization
 
 ### 5. `validator.js` - Validation System
 

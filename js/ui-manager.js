@@ -20,13 +20,19 @@ export class UIManager {
             revealQuoteBtn: document.getElementById('reveal-quote-btn'),
             revealKeywordBtn: document.getElementById('reveal-keyword-btn'),
             revealAlphabetBtn: document.getElementById('reveal-alphabet-btn'),
+            revealColumnsBtn: document.getElementById('reveal-columns-btn'),
+            revealOrderingBtn: document.getElementById('reveal-ordering-btn'),
             printCipherBtn: document.getElementById('print-cipher-btn'),
             revealedQuoteContent: document.getElementById('revealed-quote-content'),
             revealedKeywordContent: document.getElementById('revealed-keyword-content'),
             revealedAlphabetContent: document.getElementById('revealed-alphabet-content'),
+            revealedColumnsContent: document.getElementById('revealed-columns-content'),
+            revealedOrderingContent: document.getElementById('revealed-ordering-content'),
             revealedQuote: document.getElementById('revealed-quote'),
             revealedKeywords: document.getElementById('revealed-keywords'),
             revealedAlphabet: document.getElementById('revealed-alphabet'),
+            revealedColumns: document.getElementById('revealed-columns'),
+            revealedOrdering: document.getElementById('revealed-ordering'),
             
             // Print elements
             printContent: document.getElementById('print-content'),
@@ -43,6 +49,10 @@ export class UIManager {
             // Porta options elements
             portaOptions: document.getElementById('porta-options'),
             hideKeywordToggle: document.getElementById('hide-keyword-toggle'),
+            
+            // Nihilist options elements
+            nihilistOptions: document.getElementById('nihilist-options'),
+            hideNihilistKeysToggle: document.getElementById('hide-nihilist-keys-toggle'),
             
             // API Key elements
             apiKeyToggle: document.getElementById('api-key-toggle'),
@@ -65,6 +75,8 @@ export class UIManager {
         this.elements.revealQuoteBtn.addEventListener('click', () => this.revealQuote());
         this.elements.revealKeywordBtn.addEventListener('click', () => this.revealKeywords());
         this.elements.revealAlphabetBtn.addEventListener('click', () => this.revealAlphabet());
+        this.elements.revealColumnsBtn.addEventListener('click', () => this.revealColumns());
+        this.elements.revealOrderingBtn.addEventListener('click', () => this.revealOrdering());
         this.elements.printCipherBtn.addEventListener('click', () => this.printCipher());
     }
 
@@ -80,11 +92,11 @@ export class UIManager {
 
         // Format encoded text with spaces every 5 letters for Porta cipher only
         const selectedCipher = this.elements.cipherSelect.value;
-        let displayText = encodedText;
+        let displayText = encodedText.toUpperCase();
         
         if (selectedCipher === 'porta') {
             // Add spaces every 5 characters for better readability
-            displayText = encodedText.replace(/(.{5})/g, '$1 ').trim();
+            displayText = encodedText.toUpperCase().replace(/(.{5})/g, '$1 ').trim();
         }
 
         this.elements.encodedQuote.textContent = displayText;
@@ -119,21 +131,45 @@ export class UIManager {
         if (selectedCipher === 'random') {
             this.elements.revealKeywordBtn.style.display = 'none';
             this.elements.revealAlphabetBtn.textContent = 'Reveal Alphabet Table';
+            this.elements.revealColumnsBtn.style.display = 'none';
+            this.elements.revealOrderingBtn.style.display = 'none';
         } else if (selectedCipher === 'nihilist') {
             this.elements.revealKeywordBtn.style.display = 'inline-block';
             this.elements.revealKeywordBtn.disabled = false;
             this.elements.revealKeywordBtn.textContent = 'Reveal Keys';
             this.elements.revealAlphabetBtn.textContent = 'Reveal Polybius Square';
+            this.elements.revealColumnsBtn.style.display = 'none';
+            this.elements.revealOrderingBtn.style.display = 'none';
         } else if (selectedCipher === 'porta') {
             this.elements.revealKeywordBtn.style.display = 'inline-block';
             this.elements.revealKeywordBtn.disabled = false;
             this.elements.revealKeywordBtn.textContent = 'Reveal Keyword';
             this.elements.revealAlphabetBtn.style.display = 'none'; // No view table button for Porta
+            this.elements.revealColumnsBtn.style.display = 'none';
+            this.elements.revealOrderingBtn.style.display = 'none';
+        } else if (selectedCipher === 'columnar') {
+            this.elements.revealKeywordBtn.style.display = 'none';
+            this.elements.revealAlphabetBtn.style.display = 'none';
+            this.elements.revealColumnsBtn.style.display = 'inline-block';
+            this.elements.revealOrderingBtn.style.display = 'inline-block';
+            this.elements.revealColumnsBtn.disabled = false;
+            this.elements.revealOrderingBtn.disabled = false;
+            this.elements.revealColumnsBtn.textContent = 'Reveal Column Count';
+            this.elements.revealOrderingBtn.textContent = 'Reveal Column Ordering';
+        } else if (selectedCipher === 'hill') {
+            this.elements.revealKeywordBtn.style.display = 'none';
+            this.elements.revealAlphabetBtn.style.display = 'inline-block';
+            this.elements.revealAlphabetBtn.disabled = false;
+            this.elements.revealAlphabetBtn.textContent = 'Reveal Encryption Matrix';
+            this.elements.revealColumnsBtn.style.display = 'none';
+            this.elements.revealOrderingBtn.style.display = 'none';
         } else {
             this.elements.revealKeywordBtn.style.display = 'inline-block';
             this.elements.revealKeywordBtn.disabled = false;
             this.elements.revealKeywordBtn.textContent = 'Reveal Keyword(s)';
             this.elements.revealAlphabetBtn.textContent = 'Reveal Alphabet Table';
+            this.elements.revealColumnsBtn.style.display = 'none';
+            this.elements.revealOrderingBtn.style.display = 'none';
         }
         
         // K4 LEGACY CODE - Handle K4 competition notice - DO NOT MODIFY
@@ -141,6 +177,9 @@ export class UIManager {
         
         // Update Porta options visibility
         this.updatePortaOptions();
+        
+        // Update Nihilist options visibility
+        this.updateNihilistOptions();
     }
 
     // K4 LEGACY CODE - Update K4 notice visibility - DO NOT MODIFY
@@ -163,11 +202,23 @@ export class UIManager {
         }
     }
 
+    // Update Nihilist options visibility
+    updateNihilistOptions() {
+        const selectedCipher = this.elements.cipherSelect.value;
+        if (selectedCipher === 'nihilist') {
+            this.elements.nihilistOptions.style.display = 'block';
+        } else {
+            this.elements.nihilistOptions.style.display = 'none';
+        }
+    }
+
     hideAllRevealButtons() {
         // Hide all reveal buttons when there's no quote
         this.elements.revealQuoteBtn.style.display = 'none';
         this.elements.revealKeywordBtn.style.display = 'none';
         this.elements.revealAlphabetBtn.style.display = 'none';
+        this.elements.revealColumnsBtn.style.display = 'none';
+        this.elements.revealOrderingBtn.style.display = 'none';
         this.elements.printCipherBtn.style.display = 'none';
     }
 
@@ -176,11 +227,15 @@ export class UIManager {
         this.elements.revealedQuoteContent.style.display = 'none';
         this.elements.revealedKeywordContent.style.display = 'none';
         this.elements.revealedAlphabetContent.style.display = 'none';
+        this.elements.revealedColumnsContent.style.display = 'none';
+        this.elements.revealedOrderingContent.style.display = 'none';
         
         // Clear content
         this.elements.revealedQuote.innerHTML = '';
         this.elements.revealedKeywords.innerHTML = '';
         this.elements.revealedAlphabet.innerHTML = '';
+        this.elements.revealedColumns.innerHTML = '';
+        this.elements.revealedOrdering.innerHTML = '';
     }
 
     revealQuote() {
@@ -202,8 +257,14 @@ export class UIManager {
             case 'k1':
                 keywordInfo = `<strong>K1 Keyword:</strong> ${this.currentCipherResult.keyword}`;
                 break;
+            case 'k1-patristocrat':
+                keywordInfo = `<strong>K1 Patristocrat Keyword:</strong> ${this.currentCipherResult.keyword}`;
+                break;
             case 'k2':
                 keywordInfo = `<strong>K2 Keyword:</strong> ${this.currentCipherResult.keyword}`;
+                break;
+            case 'k2-patristocrat':
+                keywordInfo = `<strong>K2 Patristocrat Keyword:</strong> ${this.currentCipherResult.keyword}`;
                 break;
             case 'k3':
                 keywordInfo = `<strong>K3 Keyword:</strong> ${this.currentCipherResult.keyword}`;
@@ -245,9 +306,11 @@ export class UIManager {
 
         switch (selectedCipher) {
             case 'k1':
+            case 'k1-patristocrat':
                 tableHtml = this.generateK1K2Table('k1');
                 break;
             case 'k2':
+            case 'k2-patristocrat':
                 tableHtml = this.generateK1K2Table('k2');
                 break;
             case 'k3':
@@ -263,6 +326,9 @@ export class UIManager {
             case 'nihilist':
                 tableHtml = this.generateNihilistTable();
                 break;
+            case 'hill':
+                tableHtml = this.generateHillMatrixTable();
+                break;
         }
 
         this.elements.revealedAlphabet.innerHTML = tableHtml;
@@ -272,9 +338,81 @@ export class UIManager {
         // Update button text based on cipher type
         if (selectedCipher === 'nihilist') {
             this.elements.revealAlphabetBtn.textContent = 'Polybius Square Revealed';
+        } else if (selectedCipher === 'hill') {
+            this.elements.revealAlphabetBtn.textContent = 'Matrix Revealed';
         } else {
             this.elements.revealAlphabetBtn.textContent = 'Alphabet Revealed';
         }
+    }
+
+    revealColumns() {
+        if (!this.currentQuote || !this.currentCipherResult) return;
+        
+        const columnInfo = `<strong>Number of Columns:</strong> ${this.currentCipherResult.numColumns}`;
+        
+        this.elements.revealedColumns.innerHTML = columnInfo;
+        this.elements.revealedColumnsContent.style.display = 'block';
+        this.elements.revealColumnsBtn.disabled = true;
+        this.elements.revealColumnsBtn.textContent = 'Column Count Revealed';
+    }
+
+    revealOrdering() {
+        if (!this.currentQuote || !this.currentCipherResult) return;
+        
+        const originalOrder = this.currentCipherResult.originalColumns.join(', ');
+        const keyOrder = this.currentCipherResult.keyOrder.join(', ');
+        
+        const orderingInfo = `
+            <strong>Original Column Order:</strong> ${originalOrder}<br>
+            <strong>Key Order (columns read in this sequence):</strong> ${keyOrder}<br><br>
+            <div class="column-grid">
+                ${this.generateColumnarGrid()}
+            </div>
+        `;
+        
+        this.elements.revealedOrdering.innerHTML = orderingInfo;
+        this.elements.revealedOrderingContent.style.display = 'block';
+        this.elements.revealOrderingBtn.disabled = true;
+        this.elements.revealOrderingBtn.textContent = 'Column Ordering Revealed';
+    }
+
+    generateColumnarGrid() {
+        if (!this.currentCipherResult || !this.currentCipherResult.grid) return '';
+        
+        const grid = this.currentCipherResult.grid;
+        const keyOrder = this.currentCipherResult.keyOrder;
+        const numColumns = this.currentCipherResult.numColumns;
+        
+        let gridHtml = '<table class="columnar-grid">';
+        
+        // Header row with column numbers
+        gridHtml += '<tr>';
+        for (let col = 0; col < numColumns; col++) {
+            gridHtml += `<th>${col + 1}</th>`;
+        }
+        gridHtml += '</tr>';
+        
+        // Grid rows
+        for (let row = 0; row < grid.length; row++) {
+            gridHtml += '<tr>';
+            for (let col = 0; col < numColumns; col++) {
+                const cell = grid[row][col] || '';
+                gridHtml += `<td>${cell}</td>`;
+            }
+            gridHtml += '</tr>';
+        }
+        
+        gridHtml += '</table>';
+        
+        // Add reading order explanation
+        gridHtml += '<div class="reading-order">';
+        gridHtml += '<strong>Reading Order:</strong> Columns are read in key order: ';
+        gridHtml += keyOrder.map((colNum, index) => 
+            `${index > 0 ? ' → ' : ''}Column ${colNum}`
+        ).join('');
+        gridHtml += '</div>';
+        
+        return gridHtml;
     }
 
     generateK1K2Table(cipherType) {
@@ -507,8 +645,14 @@ export class UIManager {
         
         // Add additional info for ciphers that need keywords shown
         if (selectedCipher === 'nihilist') {
-            const keywordsText = `Polybius Key: ${this.currentCipherResult.polybiusKeyword} | Key: ${this.currentCipherResult.nihilistKey}`;
-            this.elements.printInfo.textContent = keywordsText;
+            // Check if hide keys is enabled
+            const hideKeys = this.elements.hideNihilistKeysToggle.checked;
+            if (hideKeys) {
+                this.elements.printInfo.textContent = '';
+            } else {
+                const keywordsText = `Polybius Key: ${this.currentCipherResult.polybiusKeyword} | Key: ${this.currentCipherResult.nihilistKey}`;
+                this.elements.printInfo.textContent = keywordsText;
+            }
         } else if (selectedCipher === 'porta') {
             // Check if hide keyword is enabled
             const hideKeyword = this.elements.hideKeywordToggle.checked;
@@ -525,16 +669,29 @@ export class UIManager {
         // Generate all print tables
         this.generatePrintCipherTextTable();
         
-        // Only generate substitution table for non-Porta ciphers
-        if (selectedCipher !== 'porta') {
+        // Generate appropriate table based on cipher type
+        if (selectedCipher === 'hill') {
+            this.generatePrintHillMatrix();
+            // Update header for Hill cipher
+            const substitutionHeader = document.getElementById('substitution-chart-header');
+            const substitutionTable = document.getElementById('print-substitution-table');
+            if (substitutionHeader) {
+                substitutionHeader.textContent = 'Encryption Matrix:';
+                substitutionHeader.style.display = 'block';
+            }
+            if (substitutionTable) substitutionTable.style.display = 'block';
+        } else if (selectedCipher !== 'porta' && selectedCipher !== 'columnar') {
             this.generatePrintSubstitutionTable(selectedCipher);
             // Show substitution chart section
             const substitutionHeader = document.getElementById('substitution-chart-header');
             const substitutionTable = document.getElementById('print-substitution-table');
-            if (substitutionHeader) substitutionHeader.style.display = 'block';
+            if (substitutionHeader) {
+                substitutionHeader.textContent = 'Letter Substitution Chart:';
+                substitutionHeader.style.display = 'block';
+            }
             if (substitutionTable) substitutionTable.style.display = 'block';
         } else {
-            // Clear and hide the substitution table and header for Porta
+            // Clear and hide the substitution table and header for Porta and Columnar
             this.elements.printSubstitutionTable.innerHTML = '';
             // Hide substitution chart section and header
             const substitutionHeader = document.getElementById('substitution-chart-header');
@@ -890,5 +1047,63 @@ export class UIManager {
         
         tableHtml += '</table>';
         this.elements.printSubstitutionTable.innerHTML = tableHtml;
+    }
+
+    generatePrintHillMatrix() {
+        const result = this.currentCipherResult;
+        const matrix = result.matrix;
+        
+        let tableHtml = '<table class="worksheet-table hill-matrix-print">';
+        
+        // Matrix display for worksheet
+        tableHtml += '<tr>';
+        tableHtml += `<td class="matrix-cell-print">${matrix[0][0]}</td>`;
+        tableHtml += `<td class="matrix-cell-print">${matrix[0][1]}</td>`;
+        tableHtml += '</tr>';
+        tableHtml += '<tr>';
+        tableHtml += `<td class="matrix-cell-print">${matrix[1][0]}</td>`;
+        tableHtml += `<td class="matrix-cell-print">${matrix[1][1]}</td>`;
+        tableHtml += '</tr>';
+        
+        tableHtml += '</table>';
+        
+        this.elements.printSubstitutionTable.innerHTML = tableHtml;
+    }
+
+    generateHillMatrixTable() {
+        const result = this.currentCipherResult;
+        const matrix = result.matrix;
+        
+        let tableHtml = '<div class="alphabet-label">2x2 Encryption Matrix:</div>';
+        tableHtml += '<table class="alphabet-table hill-matrix">';
+        
+        // Matrix display
+        tableHtml += '<tr>';
+        tableHtml += `<td class="matrix-cell">${matrix[0][0]}</td>`;
+        tableHtml += `<td class="matrix-cell">${matrix[0][1]}</td>`;
+        tableHtml += '</tr>';
+        tableHtml += '<tr>';
+        tableHtml += `<td class="matrix-cell">${matrix[1][0]}</td>`;
+        tableHtml += `<td class="matrix-cell">${matrix[1][1]}</td>`;
+        tableHtml += '</tr>';
+        
+        tableHtml += '</table>';
+        
+        // Add explanation based on matrix type
+        tableHtml += '<div class="cipher-explanation">';
+        tableHtml += '<strong>How it works:</strong><br>';
+        if (result.isWordBased) {
+            tableHtml += `1. Matrix generated from keyword "${result.keyword}"<br>`;
+            tableHtml += `2. Letters converted to numbers (A=0, B=1, ..., Z=25)<br>`;
+            tableHtml += `3. Text divided into pairs and multiplied by matrix<br>`;
+            tableHtml += `4. Results taken modulo 26 and converted back to letters`;
+        } else {
+            tableHtml += `1. Text is divided into pairs of letters (A=0, B=1, ..., Z=25)<br>`;
+            tableHtml += `2. Each pair is multiplied by the encryption matrix<br>`;
+            tableHtml += `3. Results are taken modulo 26 and converted back to letters`;
+        }
+        tableHtml += '</div>';
+        
+        return tableHtml;
     }
 }
